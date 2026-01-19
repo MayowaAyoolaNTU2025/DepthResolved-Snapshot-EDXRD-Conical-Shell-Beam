@@ -1,0 +1,206 @@
+
+DEFINE INSTRUMENT EDXRD(
+//These defined variables below are the distances from the x-ray source the energy-sensitive position detectors, sample, and annular collimator.
+	SourceToHexitec1 	= 0.0300,
+	
+	SourceToSlit 		= 0.0350,
+	SourceToBeamstop	= 0.0355,
+	SourceToHexitec2 	= 0.0500,
+
+	SourceToSample1 	= 0.2250,
+	
+	SourceToPinhole 	= 0.4000,
+	SourceToHexitec 	= 0.5000
+
+//This is the section where global variables could be declared (currently unused).
+DECLARE
+%{
+%}
+
+// Section where initialization code would be placed (currently unused)
+INITIALIZE
+%{
+%}
+
+// Beginning of the simulation trace section where all components are defined.
+TRACE
+
+COMPONENT  Origin = Progress_bar()
+AT (0, 0, 0) ABSOLUTE
+
+//The laboratory X-ray source using the Source_lab component
+COMPONENT  Source = Source_lab(
+	// Tungsten anode spectrum file as the source emission model
+	material_datafile = "W.txt", 
+
+	// Physical width of the X-ray source focal spot
+	width = 1e-3, height = 1e-3,
+
+	// The thickness of the anode target
+	thickness = 100e-6, 
+
+	// Tube accelerating voltage in keV
+	E0 = 130, Emax = 0, Emin = 1,
+
+	// Define horizontal and vertical focusing dimensions
+	focus_xw = 10e-3, focus_yh = 10e-3, 
+
+	// The take-off angle of the emitted X-rays
+	take_off = 25, dist = 0.025,
+
+	// Define the tube current used for scaling intensity
+	tube_current = 3e-4, 
+
+	// Fraction of statistic to use for Bremsstrahlung
+	frac = 0.1,
+
+	// Extra width and height parameters set to zero (not used)
+	xwidth = 0, yheight = 0)
+
+// Position of the source component at the origin location
+  AT (0, 0, 0) RELATIVE Origin
+
+// The first energy-position sensitive detector monitor, after X-ray source
+COMPONENT  epsd_monitor1 = EPSD_monitor(
+    // Number of pixels in x direction
+    nx=80, 
+    // Number of pixels in y direction
+    ny=80, 
+    // Name of output file where monitor data will be stored
+    filename="AfterSource.epsd", 
+    // Physical width of the monitor
+    xwidth=0.075, 
+    // Physical height of the monitor
+    yheight=0.075, 
+    // Maximum photon energy to record
+    Emax=180, 
+    // Minimum photon energy to record
+    Emin=2)
+
+// Placing this monitor at the specified distance from the source
+AT (0, 0, SourceToHexitec1) RELATIVE Origin
+// Rotating  the monitor so it faces the correct direction
+ROTATED (0, 0, 90) RELATIVE Origin
+
+//A circular slit to collimate the beam as part of the annular collimator
+COMPONENT  Slit1 = Slit(
+    // Radius of the slit opening
+    radius = 0.006)
+// Positioning of the slit 
+  AT (0, 0, SourceToSlit) RELATIVE Origin
+
+// A beamstop to collimate the beam as part of the annular collimator
+COMPONENT  BeamStop1 = Beamstop(
+    // Set the radius of the beamstop
+    radius = 0.0036)
+// Place the beamstop just after the slit
+  AT (0, 0, SourceToBeamstop) RELATIVE Origin
+
+// The second energy-sensitive position detector after, the annular collimator
+COMPONENT  epsd_monitor2= EPSD_monitor(
+    // Number of pixels in x direction
+    nx=80, 
+    // Number of pixels in y direction
+    ny=80, 
+    // Output filename for this monitor
+    filename="AfterSlitBeamStop.epsd", 
+    // Physical width of monitor
+    xwidth=0.075, 
+    // Physical height of monitor
+    yheight=0.075, 
+    // Maximum recorded energy
+    Emax=180, 
+    // Minimum recorded energy
+    Emin=2)
+
+AT (0, 0, SourceToHexitec2) RELATIVE Origin
+// Rotating the monitor into correct orientation
+ROTATED (0, 0, 90) RELATIVE Origin
+
+COMPONENT  CalciteApprox = PowderN(
+	// The reflection data file for the material
+	reflections = "Si.laz", 
+
+	//The material description file
+	material = "Si.laz", 
+
+	//The physical dimensions of the powder sample block
+	yheight = 0.5, xwidth = 0.5,zdepth = 0.015, // zdepth = 0.015 (15 MM HERE) IS THE THICKNESS OF THE SAMPLE, WHICH IS ALSO VARIED AS 7.5 MM AND 30 MM
+
+	// Packing fraction, Unit Cell Volume and Density
+	pack = 1, Vc = 160.2, density = 2.329)
+// Positioning of sample at pre-defined location
+  AT (0, 0, SourceToSample1) RELATIVE Origin
+
+COMPONENT  PinholeAperture = Slit(
+    // Radius of the pinhole aperture
+    radius = 75e-5)
+// Positioning of  the pinhole aperture
+  AT (0, 0, SourceToPinhole) RELATIVE Origin
+
+// Last Hexitec detector as an energy-sensitive position monitor
+COMPONENT  HEXITEC = EPSD_monitor(
+	// Number of pixels in x direction
+	nx = 80, ny = 80, 
+
+	// Output file to store final detector data
+	filename = "HEXITEC.epsd", 
+
+	// Physical detector dimensions
+	xwidth = 0.1,yheight = 0.1, 
+
+	//Restoration of rays after detection disabled
+	restore_xray=0, 
+
+	// Energy  range to be recorded
+	Emax = 180, Emin = 2, 
+
+	// Number of energy bins for spectral resolution
+	nE = 750)
+
+  AT (0, 0, SourceToHexitec) RELATIVE Origin
+  // Rotating the detector to face the incoming scattered beam
+  ROTATED (0, 0, 90) RELATIVE Origin
+
+FINALLY
+%{
+%}
+
+END
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

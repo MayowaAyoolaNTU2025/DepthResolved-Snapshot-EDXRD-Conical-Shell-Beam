@@ -1,0 +1,148 @@
+
+DEFINE INSTRUMENT EDXRD(
+	SourceToHexitec1 	= 0.0300,
+	
+	SourceToSlit 		= 0.0350,
+	SourceToBeamstop	= 0.0355,
+	SourceToHexitec2 	= 0.0500,
+
+	SourceToSample1 	= 0.2250,
+	
+	SourceToPinhole 	= 0.4000,
+	SourceToHexitec 	= 0.5000
+)
+
+DECLARE
+%{
+%}
+
+INITIALIZE
+%{
+%}
+
+TRACE
+
+COMPONENT  Origin = Progress_bar()
+AT (0, 0, 0) ABSOLUTE
+
+COMPONENT  Source = Source_lab(
+    material_datafile = "W.txt", width = 1e-3, height = 1e-3,
+    thickness = 100e-6, E0 = 130, Emax = 0, Emin = 1,
+    focus_xw = 10e-3, focus_yh = 10e-3, take_off = 25, dist = 0.025,
+    tube_current = 3e-4, frac = 0.1, xwidth = 0, yheight = 0)
+  AT (0, 0, 0) RELATIVE Origin
+
+COMPONENT  epsd_monitor1 = EPSD_monitor(
+    nx=80, 
+    ny=80, 
+    filename="AfterSource.epsd", 
+    xwidth=0.075, 
+    yheight=0.075, 
+    Emax=180, 
+    Emin=2)
+AT (0, 0, SourceToHexitec1) RELATIVE Origin
+ROTATED (0, 0, 90) RELATIVE Origin
+
+COMPONENT  Slit1 = Slit(
+    radius = 0.006)
+  AT (0, 0, SourceToSlit) RELATIVE Origin
+/*radius = 0.005)*/
+
+COMPONENT  BeamStop1 = Beamstop(
+    radius = 0.0036)
+  AT (0, 0, SourceToBeamstop) RELATIVE Origin
+/*radius = 0.00676)*/
+
+COMPONENT  epsd_monitor2= EPSD_monitor(
+    nx=80, 
+    ny=80, 
+    filename="AfterSlitBeamStop.epsd", 
+    xwidth=0.075, 
+    yheight=0.075, 
+    Emax=180, 
+    Emin=2)
+AT (0, 0, SourceToHexitec2) RELATIVE Origin
+ROTATED (0, 0, 90) RELATIVE Origin
+
+COMPONENT  Sample = PowderN(
+    reflections = "C_diamond.laz", material = "C_diamond.laz", yheight = 0.5, xwidth = 0.5,
+    zdepth = 0.015, pack = 1, Vc = 45.38, density = 3.515)
+  AT (0, 0, SourceToSample1) RELATIVE Origin
+
+/*
+
+For varying of sample materials, the components of the other two samples are as described below:
+
+COMPONENT  Sample = PowderN(
+    reflections = "Mo.lau", material = "Mo.lau", yheight = 0.5, xwidth = 0.5,
+    zdepth = 0.015, pack = 1)
+  AT (0, 0, SourceToSample1) RELATIVE Origin
+
+and
+
+COMPONENT  Sample = PowderN(
+    reflections = "Si.laz", material = "Si.laz", yheight = 0.5, xwidth = 0.5,
+    zdepth = 0.015, pack = 1, Vc = 160.2, density = 2.329)
+  AT (0, 0, SourceToSample1) RELATIVE Origin
+
+*/
+
+COMPONENT  PinholeAperture = Slit(
+    radius = 75e-5)
+  AT (0, 0, SourceToPinhole) RELATIVE Origin
+
+COMPONENT  HEXITEC = EPSD_monitor(
+    nx = 80, ny = 80, filename = "HEXITEC.epsd", xwidth = 0.1,
+    yheight = 0.1, restore_xray=0, Emax = 180, Emin = 2, nE = 750)
+  AT (0, 0, SourceToHexitec) RELATIVE Origin
+  ROTATED (0, 0, 90) RELATIVE Origin
+
+FINALLY
+%{
+%}
+
+END
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
